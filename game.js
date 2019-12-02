@@ -16,6 +16,9 @@ var GF = function(){
   var mousePosContainer;
   var gamepad;
   var ongoingTouches = []
+  var delay = 1000 / 60;
+  var timeSinceRedraw =0;
+  var gamePadContainer
 
   var measureFPS = function(newTime){
     if(lastTime === undefined){
@@ -29,7 +32,7 @@ var GF = function(){
       frameCount = 0;
       lastTime = newTime;
     }
-
+    timeSinceRedraw += diffTime;
     fpsContainer.innerHTML = 'FPS: ' + fps;
     frameCount++
   }
@@ -62,9 +65,13 @@ var GF = function(){
   }
   var mainLoop = function(time){
     measureFPS(time);
+    if(timeSinceRedraw > delay){
+      clearCanvas();
+      drawBackground();
+      timeSinceRedraw = 0;
+    }
 
-    clearCanvas();
-    drawBackground();
+
     scanGamePads();
     checkButtons(gamepad);
     checkAxes(gamepad)
@@ -123,7 +130,6 @@ var GF = function(){
         dx = touches[i].pageX - ongoingTouches[i].pageX;
         dy = touches[i].pageY - ongoingTouches[i].pageY;
         inputStates.angle = Math.atan2(-dy, dx)*(180/Math.PI);
-        console.log(inputStates.angle)
         if(((inputStates.angle < slice && inputStates.angle > 0) || (inputStates.angle > -slice && inputStates.angle < 0)) && dx > 40){
           inputStates.right = true;
           inputStates.left = false;
@@ -131,7 +137,6 @@ var GF = function(){
           inputStates.right = false;
           inputStates.left = true;
         }
-        console.log(inputStates.angle > -5*slice)
         if(inputStates.angle > 3*slice && inputStates.angle < 5*slice && dy < -40){
           inputStates.up = true;
           inputStates.down = false;
@@ -150,7 +155,9 @@ var GF = function(){
       var id = gamepad.id;
       var nbButtons = gamepad.buttons.length;
       var nbAxes = gamepad.axes.length
-      console.log("Gamepad No. " + index + " with id " + id + " is connected. It has " + nbButtons + " buttons and " + nbAxes + " axes." )
+      gamePadContainer = document.querySelector('#gamePadStatesContainer')
+
+      gamePadContainer.innerHTML = "Gamepad No. " + index + " with id " + id + " is connected. It has " + nbButtons + " buttons and " + nbAxes + " axes."
     })
     window.addEventListener("gamepaddisconnected", function(event){
       var gamepad = event.gamepad;
@@ -198,14 +205,14 @@ var GF = function(){
     if(gamepad === undefined) return;
     if(!gamepad.connected) return;
     for(var i = 0; i < gamepad.buttons.length; i++){
-
-
       var b = gamepad.buttons[i];
+      var buttonText;
       if(b.pressed){
-        console.log("Button " + i + " is pressed.");
+        buttonText = "Button " + i + " is pressed.";
         if(b.value !== undefined){
-          console.log("Its value is: " + b.value)
+          buttonText += " Its value is: " + b.value;
         }
+        gamePadContainer.innerHTML = buttonText;
       }
     }
   }
@@ -241,7 +248,6 @@ var GF = function(){
       y: event.clientY - rect.top
     }
   }
-
   return {
     start: start
   };
