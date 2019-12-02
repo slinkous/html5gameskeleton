@@ -11,6 +11,7 @@ var GF = function(){
   var fpsContainer;
   var fps;
   var inputStates = {};
+  var inputStateContainer;
   var mousePos = {x:0, y:0}
   var mousePosContainer;
   var gamepad;
@@ -38,20 +39,25 @@ var GF = function(){
   function drawBackground(){
     mousePosContainer.innerHTML = "mouse x: " +  Math.floor(mousePos.x) + " mouse y: " + Math.floor(mousePos.y)
 
+    var keyDivs = document.getElementsByClassName("inputStates");
+    for(var i=0; i<keyDivs.length; i++){
+      keyDivs[i].style["border-color"] = "black"
+    }
+
     if (inputStates.left) {
-      ctx.fillText("left", 150, 20);
+      keyDivs[0].style["border-color"] = "red"
     }
     if (inputStates.up) {
-      ctx.fillText("up", 150, 50);
+      keyDivs[1].style["border-color"] = "red"
     }
     if (inputStates.right) {
-      ctx.fillText("right", 150, 80);
+      keyDivs[2].style["border-color"] = "red"
     }
     if (inputStates.down) {
-     ctx.fillText("down", 150, 120);
+     keyDivs[3].style["border-color"] = "red"
     }
     if (inputStates.space) {
-     ctx.fillText("space bar", 140, 150);
+
     }
   }
   var mainLoop = function(time){
@@ -67,12 +73,11 @@ var GF = function(){
   };
 
   var start = function(){
-    var metaDataContainer = document.createElement('div');
+    var metaDataContainer = document.querySelector("#metaDataContainer");
     fpsContainer = document.createElement('div');
     mousePosContainer = document.createElement('div');
     metaDataContainer.appendChild(fpsContainer);
     metaDataContainer.appendChild(mousePosContainer);
-    document.body.appendChild(metaDataContainer);
 
     canvas = document.querySelector("#gameCanvas");
     w = canvas.width;
@@ -100,7 +105,12 @@ var GF = function(){
       }
     }, false)
     canvas.addEventListener("touchend", function(event){
-
+      event.preventDefault();
+      var touches = event.changedTouches;
+      inputStates.left = inputStates.right = inputStates.up = inputStates.down = false;
+      for(var i=0; i<touches.length; i++){
+        ongoingTouches.splice(i, 1);
+      }
     }, false)
     canvas.addEventListener("touchcancel", function(event){
 
@@ -108,22 +118,28 @@ var GF = function(){
     canvas.addEventListener("touchmove", function(event){
       event.preventDefault();
       var touches = event.changedTouches;
+      var slice = (180/8);
       for(var i = 0; i < touches.length; i++){
         dx = touches[i].pageX - ongoingTouches[i].pageX;
         dy = touches[i].pageY - ongoingTouches[i].pageY;
-        // console.log("x: " + dx)
-        // console.log("y: " + dy)
         inputStates.angle = Math.atan2(-dy, dx)*(180/Math.PI);
         console.log(inputStates.angle)
-
-
-        //debug drawing code
-        ctx.beginPath();
-        ctx.moveTo(ongoingTouches[i].pageX, ongoingTouches[i].pageY);
-        ctx.lineTo(touches[i].pageX, touches[i].pageY);
-        ctx.strokeStyle = "#000000"
-        ctx.lineWidth = 4;
-        ctx.stroke();
+        if(((inputStates.angle < slice && inputStates.angle > 0) || (inputStates.angle > -slice && inputStates.angle < 0)) && dx > 40){
+          inputStates.right = true;
+          inputStates.left = false;
+        } else if(((inputStates.angle < -3*slice && inputStates.angle >= -180) || (inputStates.angle > 3*slice && inputStates.angle <= 180))  && dx < -40){
+          inputStates.right = false;
+          inputStates.left = true;
+        }
+        console.log(inputStates.angle > -5*slice)
+        if(inputStates.angle > 3*slice && inputStates.angle < 5*slice && dy < -40){
+          inputStates.up = true;
+          inputStates.down = false;
+        }
+        if(inputStates.angle > -5*slice && inputStates.angle < -3*slice && dy > 40){
+          inputStates.up = false;
+          inputStates.down = true;
+        }
       }
 
     }, false)

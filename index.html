@@ -8,9 +8,31 @@
       canvas {
         border: 1px solid black;
       }
+      .inputStates {
+        background-color: lightgrey;
+        border-color: black;
+        border-style: solid;
+        border-radius: 5px;
+        min-width: 40px;
+        min-height: 40px;
+        float: left;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 36px;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
     <canvas id="gameCanvas" width="800" height="800"></canvas>
+    <div id="metaDataContainer">
+      <div id="inputStatesContainer">
+        <div class="inputStates" id="inputStateLeft">⇦</div>
+        <div class="inputStates" id="inputStateUp">⇧</div>
+        <div class="inputStates" id="inputStateRight">⇨</div>
+        <div class="inputStates" id="inputStateDown">⇩</div>
+      </div>
+    </div>
+
   </body>
 </html>
